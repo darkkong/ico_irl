@@ -1,0 +1,7 @@
+{
+  "devDependencies": {
+    "openzeppelin-solidity": "^2.5.1",
+    "prettier": "^2.3.0",
+    "prettier-plugin-solidity": "^1.0.0-beta.10"
+  }
+}
