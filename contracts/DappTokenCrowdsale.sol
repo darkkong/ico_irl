@@ -5,12 +5,14 @@ import "openzeppelin-solidity/contracts/crowdsale/Crowdsale.sol";
 import "openzeppelin-solidity/contracts/crowdsale/emission/MintedCrowdsale.sol";
 import "openzeppelin-solidity/contracts/crowdsale/validation/CappedCrowdsale.sol";
 import "openzeppelin-solidity/contracts/crowdsale/validation/TimedCrowdsale.sol";
+import "openzeppelin-solidity/contracts/crowdsale/validation/WhitelistCrowdsale.sol";
 
 contract DappTokenCrowdsale is
   Crowdsale,
   MintedCrowdsale,
   CappedCrowdsale,
-  TimedCrowdsale
+  TimedCrowdsale,
+  WhitelistCrowdsale
 {
   // Track investor contribution
   uint256 public investorMinCap = 2000000000000000; // Minimum investor contribution - 0.002 Ether
@@ -42,6 +44,15 @@ contract DappTokenCrowdsale is
     returns (uint256)
   {
     return contributions[_beneficiary];
+  }
+
+  function addAddressesWhitelisted(address[] memory _accounts)
+    public
+    onlyWhitelistAdmin
+  {
+    for (uint256 i = 0; i < _accounts.length; i++) {
+      addWhitelisted(_accounts[i]);
+    }
   }
 
   /**

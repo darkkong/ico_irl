@@ -40,6 +40,9 @@ contract("DappTokenCrowdsale", ([_, wallet, investor1, investor2]) => {
     // Add token minter role to crowdsale
     await token.addMinter(crowdsale.address);
 
+    // Add investors to whitelist
+    await crowdsale.addAddressesWhitelisted([investor1, investor2]);
+
     // Advance time to crowdsale start
     await increaseTimeTo(openingTime + 1);
   });
@@ -84,6 +87,15 @@ contract("DappTokenCrowdsale", ([_, wallet, investor1, investor2]) => {
     it("is open", async () => {
       const isClosed = await crowdsale.hasClosed();
       isClosed.should.be.false;
+    });
+  });
+
+  describe("whitelisted crowdsale", () => {
+    it("rejects contributions from non-whitelisted investors", async () => {
+      const notWhitelisted = _;
+      await crowdsale
+        .buyTokens(notWhitelisted, { value: ether(1), from: notWhitelisted })
+        .should.be.rejectedWith(EVMRevert);
     });
   });
 
