@@ -6,13 +6,15 @@ import "openzeppelin-solidity/contracts/crowdsale/emission/MintedCrowdsale.sol";
 import "openzeppelin-solidity/contracts/crowdsale/validation/CappedCrowdsale.sol";
 import "openzeppelin-solidity/contracts/crowdsale/validation/TimedCrowdsale.sol";
 import "openzeppelin-solidity/contracts/crowdsale/validation/WhitelistCrowdsale.sol";
+import "openzeppelin-solidity/contracts/crowdsale/distribution/RefundablePostDeliveryCrowdsale.sol";
 
 contract DappTokenCrowdsale is
   Crowdsale,
   MintedCrowdsale,
   CappedCrowdsale,
   TimedCrowdsale,
-  WhitelistCrowdsale
+  WhitelistCrowdsale,
+  RefundableCrowdsale
 {
   // Track investor contribution
   uint256 public investorMinCap = 2000000000000000; // Minimum investor contribution - 0.002 Ether
@@ -25,13 +27,17 @@ contract DappTokenCrowdsale is
     IERC20 _token,
     uint256 _cap,
     uint256 _openingTime,
-    uint256 _closingTime
+    uint256 _closingTime,
+    uint256 _goal
   )
     public
     Crowdsale(_rate, _wallet, _token)
     CappedCrowdsale(_cap)
     TimedCrowdsale(_openingTime, _closingTime)
-  {}
+    RefundableCrowdsale(_goal)
+  {
+    require(_goal <= _cap);
+  }
 
   /**
    * @dev Returns the amount contributed so far by a specific user.

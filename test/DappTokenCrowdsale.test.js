@@ -16,6 +16,7 @@ contract("DappTokenCrowdsale", ([_, wallet, investor1, investor2]) => {
   // Crowdsale config
   const rate = 500;
   const cap = ether(100);
+  const goal = ether(50);
 
   // Investor caps
   const investorMinCap = ether(0.002);
@@ -34,7 +35,8 @@ contract("DappTokenCrowdsale", ([_, wallet, investor1, investor2]) => {
       token.address,
       cap,
       openingTime,
-      closingTime
+      closingTime,
+      goal
     );
 
     // Add token minter role to crowdsale
@@ -96,6 +98,23 @@ contract("DappTokenCrowdsale", ([_, wallet, investor1, investor2]) => {
       await crowdsale
         .buyTokens(notWhitelisted, { value: ether(1), from: notWhitelisted })
         .should.be.rejectedWith(EVMRevert);
+    });
+  });
+
+  describe("refundable crowdsale", () => {
+    beforeEach(async () => {
+      await crowdsale.buyTokens(investor1, {
+        value: ether(1),
+        from: investor1,
+      });
+    });
+
+    describe("during crowdsale", () => {
+      it("prevents the investor from claiming refund", async () => {
+        await crowdsale
+          .claimRefund(investor1, { from: investor1 })
+          .should.be.rejectedWith(EVMRevert);
+      });
     });
   });
 
