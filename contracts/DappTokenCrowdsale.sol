@@ -31,6 +31,12 @@ contract DappTokenCrowdsale is
   // Default to presale stage
   CrowdsaleStage public stage = CrowdsaleStage.PreICO;
 
+  // Token Distribution
+  uint256 public tokenSalePercentage = 70;
+  uint256 public foundersPercentage = 10;
+  uint256 public foundationPercentage = 10;
+  uint256 public partnersPercentage = 10;
+
   constructor(
     uint256 _rate,
     address payable _wallet,

@@ -28,6 +28,12 @@ contract("DappTokenCrowdsale", ([_, wallet, investor1, investor2]) => {
   const icoStage = 1;
   const icoRate = 250;
 
+  // Token Distribution
+  const tokenSalePercentage = 70;
+  const foundersPercentage = 10;
+  const foundationPercentage = 10;
+  const partnersPercentage = 10;
+
   let token, crowdsale, openingTime, closingTime;
 
   before(async () => {
@@ -98,9 +104,8 @@ contract("DappTokenCrowdsale", ([_, wallet, investor1, investor2]) => {
   });
 
   describe("capped crowdsale", () => {
-    let result;
     it("has the correct hard cap", async () => {
-      result = await crowdsale.cap();
+      const result = await crowdsale.cap();
       result.toString().should.equal(cap.toString());
     });
   });
@@ -333,6 +338,47 @@ contract("DappTokenCrowdsale", ([_, wallet, investor1, investor2]) => {
             .claimRefund(investor1, { from: investor1 })
             .should.be.rejectedWith(EVMRevert);
         });
+      });
+    });
+
+    describe("token distribution", () => {
+      let tokenSalePercentageResult,
+        foundersPercentageResult,
+        foundationPercentageResult,
+        partnersPercentageResult;
+
+      before(async () => {
+        tokenSalePercentageResult = await crowdsale.tokenSalePercentage();
+        foundersPercentageResult = await crowdsale.foundersPercentage();
+        foundationPercentageResult = await crowdsale.foundationPercentage();
+        partnersPercentageResult = await crowdsale.partnersPercentage();
+      });
+
+      it("tracks token distribution correctly", async () => {
+        tokenSalePercentageResult
+          .toNumber()
+          .should.equal(tokenSalePercentage, "has correct tokenSalePercentage");
+        foundersPercentageResult
+          .toNumber()
+          .should.equal(foundersPercentage, "has correct foundersPercentage");
+        foundationPercentageResult
+          .toNumber()
+          .should.equal(
+            foundationPercentage,
+            "has correct foundationPercentage"
+          );
+        partnersPercentageResult
+          .toNumber()
+          .should.equal(partnersPercentage, "has correct partnersPercentage");
+      });
+
+      it("is a valid percentage breakdown", async () => {
+        const total =
+          tokenSalePercentageResult.toNumber() +
+          foundersPercentageResult.toNumber() +
+          foundationPercentageResult.toNumber() +
+          partnersPercentageResult.toNumber();
+        total.should.equal(100);
       });
     });
   });
