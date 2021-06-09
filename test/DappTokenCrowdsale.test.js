@@ -30,11 +30,21 @@ contract("DappTokenCrowdsale", ([_, wallet, investor1, investor2]) => {
 
   let token, crowdsale, openingTime, closingTime;
 
+  before(async () => {
+    // Transfer extra ether to investor1's account for testing
+    await web3.eth.sendTransaction({
+      from: _,
+      to: investor1,
+      value: ether(25),
+    });
+    console.log("before");
+  });
+
   beforeEach(async () => {
     openingTime = (await latestTime()) + duration.weeks(1);
     closingTime = openingTime + duration.weeks(1);
 
-    token = await DappToken.deployed(name, symbol, decimals);
+    token = await DappToken.new(name, symbol, decimals);
     crowdsale = await DappTokenCrowdsale.new(
       rate,
       wallet,
@@ -45,8 +55,12 @@ contract("DappTokenCrowdsale", ([_, wallet, investor1, investor2]) => {
       goal
     );
 
-    // Add token minter role to crowdsale
+    // Pause token
+    await token.pause();
+
+    // Add token minter & pauser role to crowdsale
     await token.addMinter(crowdsale.address);
+    await token.addPauser(crowdsale.address);
 
     // Add investors to whitelist
     await crowdsale.addAddressesWhitelisted([investor1, investor2]);
@@ -240,6 +254,85 @@ contract("DappTokenCrowdsale", ([_, wallet, investor1, investor2]) => {
           .should.be.fulfilled;
         const contribution = await crowdsale.getUserContribution(investor2);
         contribution.toString().should.equal(value.toString());
+      });
+    });
+
+    describe("token transfers", () => {
+      it("does not allow investors to transfer tokens during crowdsale", async () => {
+        // Buy some tokens first
+        await crowdsale.buyTokens(investor1, {
+          value: ether(1),
+          from: investor1,
+        });
+        // Attempt to transfer tokens during crowdsale
+        await token
+          .transfer(investor2, 1, { from: investor1 })
+          .should.be.rejectedWith(EVMRevert);
+      });
+    });
+
+    describe("finalizing the crowdsale", () => {
+      describe("when the goal is not reached", () => {
+        beforeEach(async () => {
+          // Do not meet the total
+          await crowdsale.buyTokens(investor2, {
+            value: ether(1),
+            from: investor2,
+          });
+          // Fastforward past end time
+          await increaseTimeTo(closingTime + 1);
+          // Finalize the crowdsale
+          await crowdsale.finalize({ from: _ });
+        });
+
+        it("allows the investor to claim refund", async () => {
+          await crowdsale.claimRefund(investor2, { from: investor2 }).should.be
+            .fulfilled;
+          const isMinter = await token.isMinter(crowdsale.address);
+          isMinter.should.be.true;
+        });
+      });
+
+      describe("when the goal is reached", () => {
+        let walletBalance;
+
+        beforeEach(async () => {
+          // track current wallet balance
+          walletBalance = await web3.eth.getBalance(wallet);
+
+          // Meet the goal
+          await crowdsale.buyTokens(investor1, {
+            value: ether(26),
+            from: investor1,
+          });
+          await crowdsale.buyTokens(investor2, {
+            value: ether(26),
+            from: investor2,
+          });
+          // Fastforward past end time
+          await increaseTimeTo(closingTime + 1);
+          // Finalize the crowdsale
+          await crowdsale.finalize({ from: _ });
+        });
+
+        it("handles goal reached", async () => {
+          // Tracks goal reached
+          const goalReached = await crowdsale.goalReached();
+          goalReached.should.be.true;
+
+          // Finishes minting token
+          const isMinter = await token.isMinter(crowdsale.address);
+          isMinter.should.be.false;
+
+          // Unpauses the token
+          const paused = await token.paused();
+          paused.should.be.false;
+
+          // Prevents investor from claiming refund
+          await crowdsale
+            .claimRefund(investor1, { from: investor1 })
+            .should.be.rejectedWith(EVMRevert);
+        });
       });
     });
   });

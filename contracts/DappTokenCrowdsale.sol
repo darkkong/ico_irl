@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.22 <0.9.0;
 
+import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/ERC20Pausable.sol";
 import "openzeppelin-solidity/contracts/crowdsale/Crowdsale.sol";
 import "openzeppelin-solidity/contracts/crowdsale/emission/MintedCrowdsale.sol";
 import "openzeppelin-solidity/contracts/crowdsale/validation/CappedCrowdsale.sol";
@@ -121,5 +124,20 @@ contract DappTokenCrowdsale is
     uint256 _existingContribution = contributions[_beneficiary];
     uint256 _newContribution = _existingContribution.add(_weiAmount);
     contributions[_beneficiary] = _newContribution;
+  }
+
+  /**
+   * @dev enables token transfers, called when owner calls finalize()
+   */
+  function _finalization() internal {
+    if (goalReached()) {
+      ERC20Mintable _mintableToken = ERC20Mintable(address(token()));
+      // Do more stuff...
+      _mintableToken.renounceMinter();
+      // Unpause the token
+      ERC20Pausable(address(token())).unpause();
+    }
+
+    super._finalization();
   }
 }
