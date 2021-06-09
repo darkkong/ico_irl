@@ -2,8 +2,9 @@
 pragma solidity >=0.4.22 <0.9.0;
 
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20Pausable.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/TokenTimelock.sol";
 import "openzeppelin-solidity/contracts/crowdsale/Crowdsale.sol";
 import "openzeppelin-solidity/contracts/crowdsale/emission/MintedCrowdsale.sol";
 import "openzeppelin-solidity/contracts/crowdsale/validation/CappedCrowdsale.sol";
@@ -37,6 +38,17 @@ contract DappTokenCrowdsale is
   uint256 public foundationPercentage = 10;
   uint256 public partnersPercentage = 10;
 
+  // Token reserve funds
+  address public foundersFund;
+  address public foundationFund;
+  address public partnersFund;
+
+  // Token time lock
+  uint256 public releaseTime;
+  TokenTimelock public foundersTimelock;
+  TokenTimelock public foundationTimelock;
+  TokenTimelock public partnersTimelock;
+
   constructor(
     uint256 _rate,
     address payable _wallet,
@@ -44,7 +56,11 @@ contract DappTokenCrowdsale is
     uint256 _cap,
     uint256 _openingTime,
     uint256 _closingTime,
-    uint256 _goal
+    uint256 _goal,
+    address _foundersFund,
+    address _foundationFund,
+    address _partnersFund,
+    uint256 _releaseTime
   )
     public
     Crowdsale(_rate, _wallet, _token)
@@ -53,6 +69,10 @@ contract DappTokenCrowdsale is
     RefundableCrowdsale(_goal)
   {
     require(_goal <= _cap);
+    foundersFund = _foundersFund;
+    foundationFund = _foundationFund;
+    partnersFund = _partnersFund;
+    releaseTime = _releaseTime;
   }
 
   /**
@@ -138,10 +158,37 @@ contract DappTokenCrowdsale is
   function _finalization() internal {
     if (goalReached()) {
       ERC20Mintable _mintableToken = ERC20Mintable(address(token()));
-      // Do more stuff...
+      uint256 _alreadyMinted = _mintableToken.totalSupply();
+
+      uint256 _finalTotalSupply =
+        _alreadyMinted.div(tokenSalePercentage).mul(100);
+
+      foundersTimelock = new TokenTimelock(token(), foundersFund, releaseTime);
+      foundationTimelock = new TokenTimelock(
+        token(),
+        foundationFund,
+        releaseTime
+      );
+      partnersTimelock = new TokenTimelock(token(), partnersFund, releaseTime);
+
+      _mintableToken.mint(
+        address(foundersTimelock),
+        _finalTotalSupply.div(foundersPercentage)
+      );
+      _mintableToken.mint(
+        address(foundationTimelock),
+        _finalTotalSupply.div(foundationPercentage)
+      );
+      _mintableToken.mint(
+        address(partnersTimelock),
+        _finalTotalSupply.div(partnersPercentage)
+      );
+
       _mintableToken.renounceMinter();
       // Unpause the token
-      ERC20Pausable(address(token())).unpause();
+      ERC20Pausable _pausableToken = ERC20Pausable(address(token()));
+      _pausableToken.unpause();
+      _pausableToken.renouncePauser();
     }
 
     super._finalization();
