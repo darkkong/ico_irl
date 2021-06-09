@@ -6,7 +6,8 @@ import "openzeppelin-solidity/contracts/crowdsale/emission/MintedCrowdsale.sol";
 import "openzeppelin-solidity/contracts/crowdsale/validation/CappedCrowdsale.sol";
 import "openzeppelin-solidity/contracts/crowdsale/validation/TimedCrowdsale.sol";
 import "openzeppelin-solidity/contracts/crowdsale/validation/WhitelistCrowdsale.sol";
-import "openzeppelin-solidity/contracts/crowdsale/distribution/RefundablePostDeliveryCrowdsale.sol";
+import "openzeppelin-solidity/contracts/crowdsale/distribution/RefundableCrowdsale.sol";
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 contract DappTokenCrowdsale is
   Crowdsale,
@@ -14,12 +15,18 @@ contract DappTokenCrowdsale is
   CappedCrowdsale,
   TimedCrowdsale,
   WhitelistCrowdsale,
-  RefundableCrowdsale
+  RefundableCrowdsale,
+  Ownable
 {
   // Track investor contribution
   uint256 public investorMinCap = 2000000000000000; // Minimum investor contribution - 0.002 Ether
   uint256 public investorHardCap = 50000000000000000000; // Maximum investor contribution - 50 Ether
   mapping(address => uint256) public contributions;
+
+  // Crowdsale Stages
+  enum CrowdsaleStage { PreICO, ICO }
+  // Default to presale stage
+  CrowdsaleStage public stage = CrowdsaleStage.PreICO;
 
   constructor(
     uint256 _rate,
@@ -58,6 +65,35 @@ contract DappTokenCrowdsale is
   {
     for (uint256 i = 0; i < _accounts.length; i++) {
       addWhitelisted(_accounts[i]);
+    }
+  }
+
+  /**
+   * @dev Allows admin to update the crowdsale stage
+   * @param _stage Crowdsale stage
+   */
+  function setCrowdsaleStage(uint256 _stage) public onlyOwner {
+    if (uint256(CrowdsaleStage.PreICO) == _stage) {
+      stage = CrowdsaleStage.PreICO;
+    } else if (uint256(CrowdsaleStage.ICO) == _stage) {
+      stage = CrowdsaleStage.ICO;
+    }
+
+    if (stage == CrowdsaleStage.PreICO) {
+      _setRate(500);
+    } else if (stage == CrowdsaleStage.ICO) {
+      _setRate(250);
+    }
+  }
+
+  /**
+   * @dev forwards funds to the wallet during the PreICO stage, then the refund escrow during ICO stage
+   */
+  function _forwardFunds() internal {
+    if (stage == CrowdsaleStage.PreICO) {
+      wallet().transfer(msg.value);
+    } else if (stage == CrowdsaleStage.ICO) {
+      super._forwardFunds();
     }
   }
 

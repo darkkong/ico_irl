@@ -22,6 +22,12 @@ contract("DappTokenCrowdsale", ([_, wallet, investor1, investor2]) => {
   const investorMinCap = ether(0.002);
   const investorHardCap = ether(50);
 
+  // ICO Stages
+  const preIcoStage = 0;
+  const preIcoRate = 500;
+  const icoStage = 1;
+  const icoRate = 250;
+
   let token, crowdsale, openingTime, closingTime;
 
   beforeEach(async () => {
@@ -115,6 +121,63 @@ contract("DappTokenCrowdsale", ([_, wallet, investor1, investor2]) => {
           .claimRefund(investor1, { from: investor1 })
           .should.be.rejectedWith(EVMRevert);
       });
+    });
+
+    describe("when the crowdsale stage is PreICO", () => {
+      beforeEach(async () => {
+        // Crowdsale stage is already PreICO by default
+        await crowdsale.buyTokens(investor1, {
+          value: ether(1),
+          from: investor1,
+        });
+      });
+
+      it("forwards funds to the wallet", async () => {
+        const balance = await web3.eth.getBalance(wallet);
+        expect(web3.utils.toBN(balance).gt(ether(100))).to.be.true;
+      });
+    });
+
+    describe("when the crowdsale stage is ICO", () => {
+      beforeEach(async () => {
+        await crowdsale.setCrowdsaleStage(icoStage, { from: _ });
+        await crowdsale.buyTokens(investor1, {
+          value: ether(1),
+          from: investor1,
+        });
+      });
+
+      it("forwards funds to the refund escrow", async () => {
+        const escrowAddress = await crowdsale.escrow();
+        const balance = await web3.eth.getBalance(escrowAddress);
+        expect(web3.utils.toBN(balance).gt(0)).to.be.true;
+      });
+    });
+  });
+
+  describe("crowdsale stages", () => {
+    it("it starts in PreICO", async () => {
+      const stage = await crowdsale.stage();
+      stage.toNumber().should.equal(preIcoStage);
+    });
+
+    it("starts at the preICO rate", async () => {
+      const result = await crowdsale.rate();
+      result.toNumber().should.equal(preIcoRate);
+    });
+
+    it("allows admin to update the stage & rate", async () => {
+      await crowdsale.setCrowdsaleStage(icoStage, { from: _ });
+      const stage = await crowdsale.stage();
+      stage.toNumber().should.equal(icoStage);
+      const result = await crowdsale.rate();
+      result.toNumber().should.equal(icoRate);
+    });
+
+    it("prevents non-admin from updating the stage", async () => {
+      await crowdsale
+        .setCrowdsaleStage(icoStage, { from: investor1 })
+        .should.be.rejectedWith(EVMRevert);
     });
   });
 

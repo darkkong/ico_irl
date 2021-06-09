@@ -1343,10 +1343,157 @@
       "links": {},
       "address": "0x2F740Dfa5A8D91d84D37Bb5ff9aB269D8589a286",
       "transactionHash": "0x405f8eefdab5ec0a84ac54a6ff29820577f17c41580b4477b128628f9b70b1b1"
+    },
+    "1623063813962": {
+      "events": {},
+      "links": {},
+      "address": "0xC7737a1dA002Ea2488E57Ec762D295f9729c6aBe",
+      "transactionHash": "0x1aaa1aabc28da4520af115358c375544e5c71bd743703d644ff6682ee504eb8f"
+    },
+    "1623069146420": {
+      "events": {},
+      "links": {},
+      "address": "0x7c96068a5961e0558d1595f9dA240c4112Ea5470",
+      "transactionHash": "0xf45d9e6abeae9ee5c12dff3f2034977966cda290ecb1c9fac2db4d544ecdc21a"
+    },
+    "1623072111692": {
+      "events": {
+        "0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "Paused",
+          "type": "event"
+        },
+        "0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "Unpaused",
+          "type": "event"
+        },
+        "0x6719d08c1888103bea251a4ed56406bd0c3e69723c8a1686e017e7bbe159b6f8": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "PauserAdded",
+          "type": "event"
+        },
+        "0xcd265ebaf09df2871cc7bd4133404a235ba12eff2041bb89d9c714a2621c7c7e": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "PauserRemoved",
+          "type": "event"
+        },
+        "0x6ae172837ea30b801fbfcdd4108aa1d5bf8ff775444fd70256b44e6bf3dfc3f6": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "MinterAdded",
+          "type": "event"
+        },
+        "0xe94479a9f7e1952cc78f2d6baab678adc1b772d936c6583def489e524cb66692": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "MinterRemoved",
+          "type": "event"
+        },
+        "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "name": "from",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "name": "value",
+              "type": "uint256"
+            }
+          ],
+          "name": "Transfer",
+          "type": "event"
+        },
+        "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "name": "spender",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "name": "value",
+              "type": "uint256"
+            }
+          ],
+          "name": "Approval",
+          "type": "event"
+        }
+      },
+      "links": {},
+      "address": "0xBBFE45CfC86dEb5Cd738f98ec81E0E113A98088C",
+      "transactionHash": "0xe70a38c41dfc2262c9839b66840257565310019efefbab2c8ffd266ef395c87e"
+    },
+    "1623202041439": {
+      "events": {},
+      "links": {},
+      "address": "0x20a4e091576C398558098C17b171AAeEdE586eE4",
+      "transactionHash": "0x86087497094a518e8d4b6cce8b77c90eed9b237d32bad09b0805785c7cc88f9b"
+    },
+    "1623203121021": {
+      "events": {},
+      "links": {},
+      "address": "0xDA2bCE40E14Ee5Cf6D7fc163f3566e3AEDe7Af95",
+      "transactionHash": "0xa6a40c9d0eeeffa960e5de5a2eeb0d8450f2c99eab9c3948a3a4bd8e5298e0ca"
     }
   },
   "schemaVersion": "3.4.1",
-  "updatedAt": "2021-06-07T05:44:52.589Z",
+  "updatedAt": "2021-06-09T01:45:58.067Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {
