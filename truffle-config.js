@@ -1,5 +1,9 @@
 require("babel-register");
 require("babel-polyfill");
+require("dotenv").config();
+
+const HDWalletProvider = require("truffle-hdwallet-provider-privkey");
+const privateKeys = process.env.PRIVATE_KEYS || "";
 
 /**
  * Use this file to configure your truffle project. It's seeded with some
@@ -49,6 +53,17 @@ module.exports = {
       host: "localhost", // Localhost (default: none)
       port: 8545, // Standard Ethereum port (default: none)
       network_id: "*", // Any network (default: none)
+    },
+    rinkeby: {
+      provider: () => {
+        return new HDWalletProvider(
+          privateKeys.split(","),
+          `https://rinkeby.infura.io/v3/${process.env.INFURA_API_KEY}`
+        );
+      },
+      gas: 10000000,
+      gasPrice: 25000000000,
+      network_id: 4,
     },
     // Another network with more advanced options...
     // advanced: {

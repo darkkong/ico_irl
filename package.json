@@ -11,6 +11,8 @@
     "babel-register": "^6.26.0",
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
-    "openzeppelin-solidity": "^2.5.1"
+    "dotenv": "^10.0.0",
+    "openzeppelin-solidity": "^2.5.1",
+    "truffle-hdwallet-provider-privkey": "^0.3.0"
   }
 }
